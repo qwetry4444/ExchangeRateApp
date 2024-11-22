@@ -1,6 +1,7 @@
 ﻿using ExchangeRateApp.Model;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -22,7 +23,12 @@ namespace ExchangeRateApp
         {
             try
             {
-                var response = await httpClient.GetAsync($"https://www.cbr-xml-daily.ru/archive/{date.Year}/{date.Month}/{date.Day}/daily_json.js");
+                var response = await httpClient.GetAsync($"https://www.cbr-xml-daily.ru/archive/{date.ToString("yyyy/MM/dd", CultureInfo.InvariantCulture)}/daily_json.js");
+                while (!response.IsSuccessStatusCode)
+                {
+                    date = date.AddDays(-1);
+                    response = await httpClient.GetAsync($"https://www.cbr-xml-daily.ru/archive/{date.ToString("yyyy/MM/dd", CultureInfo.InvariantCulture)}/daily_json.js");
+                }
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -34,7 +40,7 @@ namespace ExchangeRateApp
                 }
                 else
                 {
-                    throw new HttpRequestException($"Request failed with status code: {response.StatusCode}");
+                    throw new Exception("sdf");  
                 }
             }
             catch (Exception ex)

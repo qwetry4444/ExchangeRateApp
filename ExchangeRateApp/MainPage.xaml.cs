@@ -10,5 +10,11 @@ namespace ExchangeRateApp
             BindingContext = vm;
             InitializeComponent();
         }
+
+        protected async override void OnAppearing()
+        {
+            base.OnAppearing();
+            await vm.UpdateValCurs();
+        }
     }
 }

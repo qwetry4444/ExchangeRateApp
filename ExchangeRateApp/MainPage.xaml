@@ -13,13 +13,19 @@
         <Label Text="Курс на"/>
 
         <HorizontalStackLayout>
-            <Picker ItemsSource="{Binding valCurs}}"/>
-            <Entry/>
+            <Picker 
+                ItemsSource="{Binding Valutes}" 
+                ItemDisplayBinding="{Binding Name}" 
+                SelectedItem="{Binding ValuteSource}"/>
+            <Entry Text="{Binding AmountSource}" />
         </HorizontalStackLayout>
 
         <HorizontalStackLayout>
-            <Picker/>
-            <Entry/>
+            <Picker 
+                ItemsSource="{Binding Valutes}" 
+                ItemDisplayBinding="{Binding Name}" 
+                SelectedItem="{Binding ValuteTarget}"/>
+            <Entry Text="{Binding AmountTarget}"/>
         </HorizontalStackLayout>
     </VerticalStackLayout>
 </ContentPage>
