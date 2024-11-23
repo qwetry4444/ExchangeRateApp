@@ -9,23 +9,25 @@
             Spacing="25">
         <Label Text="Конвертер валют"/>
 
-        <DatePicker/>
-        <Label Text="Курс на"/>
+        <DatePicker Date="{Binding Date}" Format="d"/>
+        <Label Text="{Binding LabelDate}"/>
 
         <HorizontalStackLayout>
             <Picker 
                 ItemsSource="{Binding Valutes}" 
                 ItemDisplayBinding="{Binding Name}" 
-                SelectedItem="{Binding ValuteSource}"/>
-            <Entry Text="{Binding AmountSource}" />
+                SelectedItem="{Binding ValuteSource}"
+                WidthRequest="346"/>
+            <Entry Text="{Binding AmountSource}" Keyboard="Numeric" TextChanged="OnTextChanged"/>
         </HorizontalStackLayout>
 
         <HorizontalStackLayout>
             <Picker 
                 ItemsSource="{Binding Valutes}" 
                 ItemDisplayBinding="{Binding Name}" 
-                SelectedItem="{Binding ValuteTarget}"/>
-            <Entry Text="{Binding AmountTarget}"/>
+                SelectedItem="{Binding ValuteTarget}"
+                WidthRequest="346"/>
+            <Entry Text="{Binding AmountTarget}" Keyboard="Numeric" TextChanged="OnTextChanged"/>
         </HorizontalStackLayout>
     </VerticalStackLayout>
 </ContentPage>

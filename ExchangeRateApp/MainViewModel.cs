@@ -5,9 +5,6 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace ExchangeRateApp
 {
     public class MainViewModel : INotifyPropertyChanged
@@ -28,13 +25,24 @@ namespace ExchangeRateApp
             {
                 Valutes.Add(valute);
             }
-            Exchange();
+            ExchangeSource();
         }
 
-        public void Exchange()
+        public void ExchangeSource()
         {
             if (ValuteSource != null && ValuteTarget != null)
-                AmountTarget = (AmountSource * ValuteSource.Value / ValuteSource.Nominal) / (ValuteTarget.Value / ValuteTarget.Nominal);
+            {
+                amountTarget = Math.Round((AmountSource * ValuteSource.Value / ValuteSource.Nominal) / (ValuteTarget.Value / ValuteTarget.Nominal), 2);
+                OnPropertyChanged(nameof(AmountTarget));
+            }
+        }
+        public void ExchangeTarget()
+        {
+            if (ValuteSource != null && ValuteTarget != null)
+            {
+                amountSource = Math.Round((AmountTarget * ValuteTarget.Value / ValuteTarget.Nominal) / (ValuteSource.Value / ValuteSource.Nominal), 2);
+                OnPropertyChanged(nameof(AmountSource));
+            }
         }
 
 
@@ -50,6 +58,22 @@ namespace ExchangeRateApp
                 if (date != value)
                 {
                     date = value;
+                    LabelDate = $"Курс валют на {Date.Day}.{Date.Month}.{Date.Year}";
+                    ExchangeSource();
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        string labelDate;
+        public string LabelDate
+        {
+            get => labelDate;
+            set
+            {
+                if (value != labelDate) 
+                {
+                    labelDate = value;
                     OnPropertyChanged();
                 }
             }
@@ -67,7 +91,7 @@ namespace ExchangeRateApp
                     valuteSource = value;
                     OnPropertyChanged();
                     ExchangeCommand.ChangeCanExecute();
-                    Exchange();
+                    ExchangeSource();
                 }
             }
         }
@@ -84,7 +108,7 @@ namespace ExchangeRateApp
                     valuteTarget = value;
                     OnPropertyChanged();
                     ExchangeCommand.ChangeCanExecute();
-                    Exchange();
+                    ExchangeSource();
                 }
             }
         }
@@ -99,7 +123,7 @@ namespace ExchangeRateApp
                 {
                     amountSource = value;
                     OnPropertyChanged();
-                    Exchange();
+                    ExchangeSource();
                 }
             }
         }
@@ -114,15 +138,17 @@ namespace ExchangeRateApp
                 {
                     amountTarget = value;
                     OnPropertyChanged();
-                    Exchange();
+                    ExchangeTarget();
                 }
             }
         }
 
+        
+
 
         public MainViewModel()
         {
-            date = DateTime.Now;
+            Date = DateTime.Now;
             exchangeRateApiService = new();
             Valutes = new();
 
@@ -133,7 +159,7 @@ namespace ExchangeRateApp
             ExchangeCommand = new Command(
                 execute: () =>
                 {
-                    Exchange();
+                    ExchangeSource();
                 },
                 canExecute: () => 
                 { 
