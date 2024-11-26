@@ -30,18 +30,11 @@ namespace ExchangeRateApp
                     response = await httpClient.GetAsync($"https://www.cbr-xml-daily.ru/archive/{date.ToString("yyyy/MM/dd", CultureInfo.InvariantCulture)}/daily_json.js");
                 }
 
-                if (response.IsSuccessStatusCode)
+                var jsonString = await response.Content.ReadAsStringAsync();
+                return JsonSerializer.Deserialize<ValCurs>(jsonString, new JsonSerializerOptions
                 {
-                    var jsonString = await response.Content.ReadAsStringAsync();
-                    return JsonSerializer.Deserialize<ValCurs>(jsonString, new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    });
-                }
-                else
-                {
-                    throw new Exception("sdf");  
-                }
+                    PropertyNameCaseInsensitive = true
+                });
             }
             catch (Exception ex)
             {

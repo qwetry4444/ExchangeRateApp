@@ -1,9 +1,6 @@
 ﻿using ExchangeRateApp.Model;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
 using System.Runtime.CompilerServices;
 namespace ExchangeRateApp
 {
@@ -17,13 +14,28 @@ namespace ExchangeRateApp
         public Command UpdateValCursCommand { get; private set; }
         public Command ExchangeCommand {  get; private set; }
 
+        public ValCurs ValCurs { get; private set; }
+        public ObservableCollection<Valute> Valutes { get; private set; }
+
         public async Task UpdateValCurs()
         {
             ValCurs = await exchangeRateApiService.GetValCurs(date);
+            ValCurs.Valute.Add("RUB", new Valute("0", "0", "RUB", 1, "Российский рубль", 1, 1));
+            LabelDate = $"Курс валют на {ValCurs.Date.Day}.{ValCurs.Date.Month}.{ValCurs.Date.Year}";
             Valutes.Clear();
             foreach (var valute in ValCurs.Valute.Values)
             {
                 Valutes.Add(valute);
+            }
+
+            if (valuteSourceCharCode != null)
+            {
+                ValuteSource = ValCurs.Valute[valuteSourceCharCode];
+            }
+
+            if (valuteTargetCharCode != null)
+            {
+                ValuteTarget = ValCurs.Valute[valuteTargetCharCode];
             }
             ExchangeSource();
         }
@@ -32,7 +44,7 @@ namespace ExchangeRateApp
         {
             if (ValuteSource != null && ValuteTarget != null)
             {
-                amountTarget = Math.Round((AmountSource * ValuteSource.Value / ValuteSource.Nominal) / (ValuteTarget.Value / ValuteTarget.Nominal), 2);
+                amountTarget = Math.Round((AmountSource * ValuteSource.Value / ValuteSource.Nominal) / (ValuteTarget.Value / ValuteTarget.Nominal), 4);
                 OnPropertyChanged(nameof(AmountTarget));
             }
         }
@@ -40,46 +52,12 @@ namespace ExchangeRateApp
         {
             if (ValuteSource != null && ValuteTarget != null)
             {
-                amountSource = Math.Round((AmountTarget * ValuteTarget.Value / ValuteTarget.Nominal) / (ValuteSource.Value / ValuteSource.Nominal), 2);
+                amountSource = Math.Round((AmountTarget * ValuteTarget.Value / ValuteTarget.Nominal) / (ValuteSource.Value / ValuteSource.Nominal), 4);
                 OnPropertyChanged(nameof(AmountSource));
             }
         }
 
-
-        public ValCurs ValCurs { get; private set; }
-        public ObservableCollection<Valute> Valutes { get; private set; }
-
-        DateTime date;
-        public DateTime Date
-        {
-            get => date;
-            set
-            {
-                if (date != value)
-                {
-                    date = value;
-                    LabelDate = $"Курс валют на {Date.Day}.{Date.Month}.{Date.Year}";
-                    ExchangeSource();
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        string labelDate;
-        public string LabelDate
-        {
-            get => labelDate;
-            set
-            {
-                if (value != labelDate) 
-                {
-                    labelDate = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-
+        string valuteSourceCharCode;
         Valute valuteSource;
         public Valute ValuteSource
         {
@@ -88,6 +66,10 @@ namespace ExchangeRateApp
             {
                 if (valuteSource != value)
                 {
+                    if (value != null)
+                    {
+                        valuteSourceCharCode = value.CharCode;
+                    }
                     valuteSource = value;
                     OnPropertyChanged();
                     ExchangeCommand.ChangeCanExecute();
@@ -96,7 +78,7 @@ namespace ExchangeRateApp
             }
         }
 
-
+        string valuteTargetCharCode;
         Valute valuteTarget;
         public Valute ValuteTarget
         {
@@ -105,6 +87,10 @@ namespace ExchangeRateApp
             {
                 if (valuteTarget != value)
                 {
+                    if (value != null)
+                    {
+                        valuteTargetCharCode = value.CharCode;
+                    }
                     valuteTarget = value;
                     OnPropertyChanged();
                     ExchangeCommand.ChangeCanExecute();
@@ -143,14 +129,42 @@ namespace ExchangeRateApp
             }
         }
 
-        
 
+        DateTime date;
+        public DateTime Date
+        {
+            get => date;
+            set
+            {
+                if (date != value)
+                {
+                    date = value;
+                    UpdateValCurs();
+                }
+            }
+        }
+
+        string labelDate;
+        public string LabelDate
+        {
+            get => labelDate;
+            set
+            {
+                if (value != labelDate)
+                {
+                    labelDate = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
         public MainViewModel()
         {
-            Date = DateTime.Now;
             exchangeRateApiService = new();
+            
+            Date = DateTime.Now;
             Valutes = new();
+            UpdateValCurs();
 
             UpdateValCursCommand = new Command(
                 () => UpdateValCurs()
